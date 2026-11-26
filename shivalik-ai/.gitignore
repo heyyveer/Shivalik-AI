@@ -1,0 +1,40 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Python virtual environments
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Generated data and vector database
+data/raw/
+data/processed/
+data/chroma_db/
+chroma_db/
+
+# Frontend dependencies and build
+node_modules/
+dist/
+.vite/
+coverage/
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# IDE and editor
+.vscode/
+.idea/
+
+# Operating system
+.DS_Store
+Thumbs.db
