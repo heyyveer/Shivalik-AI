@@ -139,7 +139,7 @@ def normalize_citations(answer: str) -> str:
 
 def ask_question(
     question: str,
-    top_k: int = 5,
+    top_k: int = 8,
     conversation_id: str | None = None,
 ):
     if not question or not question.strip():

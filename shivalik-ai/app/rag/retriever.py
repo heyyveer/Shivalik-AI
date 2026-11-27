@@ -11,7 +11,7 @@ from app.rag.vectorstore import get_collection, load_chunks
 
 CHUNKS_FILE = Path("data/processed/chunks.json")
 
-DEFAULT_TOP_K = 5
+DEFAULT_TOP_K = 8
 CANDIDATE_K = 15
 RRF_K = 60
 
@@ -152,6 +152,11 @@ CATEGORY_KEYWORDS = {
         "admission", "admissions", "eligibility",
         "application process", "how to apply"
     ],
+    "academics": [
+        "btech", "b.tech", "bca", "bba", "mba", "b.pharm", "bpharm",
+        "bsc", "engineering", "course", "courses", "program", "programme",
+        "branch", "specialization", "curriculum", "syllabus"
+    ],
     "research": [
         "research", "publication", "patent",
         "laboratory", "innovation"
@@ -160,7 +165,13 @@ CATEGORY_KEYWORDS = {
 
 
 def detect_query_category(query):
+    matched = detect_query_categories(query)
+    return next(iter(matched), None)
+
+
+def detect_query_categories(query):
     query = query.lower()
+    matched = set()
 
     for category, keywords in CATEGORY_KEYWORDS.items():
         if any(
@@ -170,12 +181,12 @@ def detect_query_category(query):
             )
             for keyword in keywords
         ):
-            return category
+            matched.add(category)
 
-    return None
+    return matched
 
 
-def diversify_results(results, top_k=5, max_per_source=2):
+def diversify_results(results, top_k=8, max_per_source=2):
     selected = []
     source_counts = {}
 
@@ -212,20 +223,16 @@ def retrieve_documents(query, top_k=DEFAULT_TOP_K):
         [semantic_results, keyword_results]
     )
 
-    detected_category = detect_query_category(query)
+    detected_categories = detect_query_categories(query)
 
-    CATEGORY_BOOST = 0.015
+    CATEGORY_BOOST = 0.005
 
     for result in fused_results:
-        result["detected_category"] = detected_category
-
+        result["detected_categories"] = detected_categories
         result["final_score"] = result["rrf_score"]
 
-        if (
-            detected_category
-            and result["metadata"].get("category")
-            == detected_category
-        ):
+        category = result["metadata"].get("category")
+        if category and category in detected_categories:
             result["final_score"] += CATEGORY_BOOST
 
     fused_results.sort(
